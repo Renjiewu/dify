@@ -266,7 +266,7 @@ class ParameterExtractorNode(LLMNode):
             model_parameters=node_data_model.completion_params,
             tools=tools,
             stop=stop,
-            stream=False,
+            stream=True,
             user=self.user_id,
         )
 

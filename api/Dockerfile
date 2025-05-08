@@ -3,23 +3,35 @@ FROM python:3.12-slim-bookworm AS base
 
 WORKDIR /app/api
 
+ARG PIP_INDEX=https://repo.huaweicloud.com/repository/pypi/simple
+# ARG PIP_INDEX=https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+
+RUN pip config set global.index-url "$PIP_INDEX" && \
+    pip config set global.extra-index-url "$PIP_INDEX" && \
+    python -m pip install --upgrade pip
+
 # Install uv
 ENV UV_VERSION=0.6.14
+ENV UV_DEFAULT_INDEX="${PIP_INDEX}"
+ENV UV_HTTP_TIMEOUT=180
 
 RUN pip install --no-cache-dir uv==${UV_VERSION}
 
+# if you located in China, you can use aliyun mirror to speed up
+# RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
+RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.tencent.com@g" /etc/apt/sources.list.d/debian.sources
 
 FROM base AS packages
 
-# if you located in China, you can use aliyun mirror to speed up
-# RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked
+# RUN uv sync --locked
+RUN uv sync
+
 
 # production stage
 FROM base AS production

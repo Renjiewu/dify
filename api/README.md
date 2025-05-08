@@ -91,3 +91,4 @@
    uv run -P api bash dev/pytest/pytest_all_tests.sh
    ```
 
+docker build -t dockerhub.datagrand.com/baize/langgenius/dify-api:1.3.1-dev --add-host raw.githubusercontent.com:185.199.108.133  .
